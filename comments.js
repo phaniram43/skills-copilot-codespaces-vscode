@@ -1,13 +1,24 @@
-// create a web server
-const express = require('express');
-const app = express();
+//create web server
+var http = require("http");
+var fs = require("fs");
+var url = require("url");
 
-// create a route
-app.get('/comments', (req, res) => {
-  res.send('This is the comments page.');
+var server = http.createServer(function(req, res) {
+  var path = url.parse(req.url).pathname;
+  var path = path.substring(1, path.length);
+  console.log(path);
+  fs.readFile(path, function(err, data) {
+    if (err) {
+      console.log(err);
+      res.writeHead(404, {"Content-Type": "text/html"});
+      res.write("404 Not found");
+    } else {
+      res.writeHead(200, {"Content-Type": "text/html"});
+      res.write(data);
+    }
+    res.end();
+  });
 });
 
-// start the server
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
-});
+server.listen(8080);
+console.log("Server running at http://" + "localhost" + ":" + 8080 + "/");
