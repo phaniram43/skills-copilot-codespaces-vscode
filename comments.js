@@ -1,24 +1,53 @@
-//create web server
-var http = require("http");
+//Create web server
+var express = require('express');
+var app = express();
 var fs = require("fs");
-var url = require("url");
 
-var server = http.createServer(function(req, res) {
-  var path = url.parse(req.url).pathname;
-  var path = path.substring(1, path.length);
-  console.log(path);
-  fs.readFile(path, function(err, data) {
-    if (err) {
-      console.log(err);
-      res.writeHead(404, {"Content-Type": "text/html"});
-      res.write("404 Not found");
-    } else {
-      res.writeHead(200, {"Content-Type": "text/html"});
-      res.write(data);
-    }
-    res.end();
-  });
-});
+//Get comments
+app.get('/getComments', function (req, res) {
+   fs.readFile( __dirname + "/" + "comments.json", 'utf8', function (err, data) {
+       console.log( data );
+       res.end( data );
+   });
+})
 
-server.listen(8080);
-console.log("Server running at http://" + "localhost" + ":" + 8080 + "/");
+//Add comments
+app.get('/addComments', function (req, res) {
+   fs.readFile( __dirname + "/" + "comments.json", 'utf8', function (err, data) {
+       data = JSON.parse( data );
+       data.push(req.query);
+       console.log(data);
+       fs.writeFile( __dirname + "/" + "comments.json", JSON.stringify(data), function (err) {
+           if (err) {
+               console.log(err);
+           } else {
+               console.log("The file was saved!");
+               res.end(JSON.stringify(data));
+           }
+       });
+   });
+})
+
+//Delete comments
+app.get('/deleteComments', function (req, res) {
+   fs.readFile( __dirname + "/" + "comments.json", 'utf8', function (err, data) {
+       data = JSON.parse( data );
+       data.splice(req.query.index, 1);
+       console.log(data);
+       fs.writeFile( __dirname + "/" + "comments.json", JSON.stringify(data), function (err) {
+           if (err) {
+               console.log(err);
+           } else {
+               console.log("The file was saved!");
+               res.end(JSON.stringify(data));
+           }
+       });
+   });
+})
+
+var server = app.listen(8081, function () {
+   var host = server.address().address
+   var port = server.address().port
+
+   console.log("Server started at http://%s:%s", host, port)
+})
